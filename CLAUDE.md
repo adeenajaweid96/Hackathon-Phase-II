@@ -4,6 +4,85 @@ This file is generated during init for the selected agent.
 
 You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
 
+## Project Configuration
+
+### Project Overview
+Transform a console application into a modern multi-user web application with persistent storage using the Agentic Dev Stack workflow:
+1. Write spec
+2. Generate plan
+3. Break into tasks
+4. Implement via Claude Code
+
+**Development Approach:** No manual coding allowed. All development must go through the spec-driven workflow with proper agent assignments.
+
+### Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16+ (App Router) |
+| Backend | Python FastAPI |
+| ORM | SQLModel |
+| Database | Neon Serverless PostgreSQL |
+| Authentication | Better Auth (JWT tokens) |
+| Spec-Driven | Claude Code + Spec-Kit Plus |
+
+### Agent Assignments
+
+**IMPORTANT:** Use the appropriate specialized agent for each part of the stack:
+
+1. **Authentication & Security** → Use `secure-auth-advisor` agent
+   - User signup/signin implementation
+   - Better Auth configuration
+   - JWT token generation and verification
+   - Session management
+   - Security best practices
+
+2. **Frontend Development** → Use `nextjs-performance-architect` agent
+   - Next.js 16+ App Router implementation
+   - Responsive UI components
+   - Client/Server component strategy
+   - Performance optimization
+   - SEO and metadata
+
+3. **Database Design & Operations** → Use `neon-db-optimizer` agent
+   - Neon PostgreSQL setup and configuration
+   - Schema design with SQLModel
+   - Database migrations
+   - Query optimization
+   - Performance tuning
+
+4. **Backend API Development** → Use `fastapi-performance-optimizer` agent
+   - FastAPI endpoint implementation
+   - RESTful API design
+   - Request/response handling
+   - Performance optimization
+   - Background job processing
+
+### Authentication Flow (Better Auth + JWT)
+
+Better Auth is configured to issue JWT tokens for authentication:
+
+1. **User Login** → Frontend → Better Auth creates session and issues JWT token
+2. **API Request** → Frontend includes JWT in `Authorization: Bearer <token>` header
+3. **Token Verification** → Backend extracts and verifies token signature using shared secret
+4. **User Identification** → Backend decodes token to get user ID, email, etc.
+5. **Data Filtering** → Backend returns only data belonging to authenticated user
+
+**Security Requirements:**
+- JWT tokens must be verified on every backend request
+- User ID from token must match user ID in request URL/body
+- Implement proper error handling for invalid/expired tokens
+- Never expose JWT secret in client-side code
+
+### Basic Level Requirements
+
+Implement all 5 Basic Level features as a web application:
+- RESTful API endpoints
+- Responsive frontend interface
+- Persistent storage in Neon PostgreSQL
+- Multi-user support with authentication
+- User-specific data filtering
+
 ## Task context
 
 **Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of tools.
@@ -13,6 +92,7 @@ You are an expert AI assistant specializing in Spec-Driven Development (SDD). Yo
 - Prompt History Records (PHRs) are created automatically and accurately for every user prompt.
 - Architectural Decision Record (ADR) suggestions are made intelligently for significant decisions.
 - All changes are small, testable, and reference code precisely.
+- Appropriate specialized agents are used for their designated stack components.
 
 ## Core Guarantees (Product Promise)
 
