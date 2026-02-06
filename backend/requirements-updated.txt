@@ -1,0 +1,28 @@
+# FastAPI and core dependencies (latest versions with Python 3.12+ support)
+fastapi>=0.115.0
+uvicorn>=0.32.0
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# Database and ORM (latest versions)
+sqlmodel>=0.0.22
+asyncpg>=0.30.0
+alembic>=1.14.0
+
+# Authentication (latest versions)
+python-jose>=3.3.0
+cryptography>=44.0.0
+passlib>=1.7.4
+bcrypt>=4.2.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# Testing (latest versions)
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
+httpx>=0.28.0
+
+# Development tools
+black>=24.10.0
+flake8>=7.1.0

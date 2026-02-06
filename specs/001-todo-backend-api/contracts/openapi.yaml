@@ -1,0 +1,465 @@
+openapi: 3.0.3
+info:
+  title: Todo Backend API
+  description: |
+    RESTful API for multi-user todo application with JWT authentication.
+    All endpoints require authentication and enforce strict user data isolation.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: todos
+    description: Todo CRUD operations
+
+paths:
+  /api/todos:
+    get:
+      tags:
+        - todos
+      summary: Retrieve all todos for authenticated user
+      description: |
+        Returns all todo items belonging to the authenticated user.
+        Todos are ordered by creation date (newest first).
+        Performance target: <500ms for up to 100 items.
+      operationId: getTodos
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoResponse'
+              examples:
+                withTodos:
+                  summary: User with todos
+                  value:
+                    - id: 1
+                      title: "Complete project documentation"
+                      description: "Write comprehensive API docs"
+                      completed: false
+                      user_id: "user123"
+                      created_at: "2026-02-05T10:30:00Z"
+                      updated_at: "2026-02-05T10:30:00Z"
+                    - id: 2
+                      title: "Review pull requests"
+                      description: null
+                      completed: true
+                      user_id: "user123"
+                      created_at: "2026-02-05T09:15:00Z"
+                      updated_at: "2026-02-05T11:00:00Z"
+                emptyList:
+                  summary: User with no todos
+                  value: []
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - todos
+      summary: Create a new todo
+      description: |
+        Creates a new todo item for the authenticated user.
+        The todo is automatically associated with the user from the JWT token.
+        Performance target: <300ms.
+      operationId: createTodo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoCreate'
+            examples:
+              withDescription:
+                summary: Todo with description
+                value:
+                  title: "Implement user authentication"
+                  description: "Set up JWT token verification and user session management"
+              withoutDescription:
+                summary: Todo without description
+                value:
+                  title: "Fix bug in login flow"
+      responses:
+        '201':
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 3
+                title: "Implement user authentication"
+                description: "Set up JWT token verification and user session management"
+                completed: false
+                user_id: "user123"
+                created_at: "2026-02-05T12:00:00Z"
+                updated_at: "2026-02-05T12:00:00Z"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/todos/{id}/complete:
+    patch:
+      tags:
+        - todos
+      summary: Toggle todo completion status
+      description: |
+        Updates the completion status of a todo item.
+        User must be the owner of the todo.
+        Performance target: <300ms.
+      operationId: completeTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Todo ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoComplete'
+            examples:
+              markComplete:
+                summary: Mark as complete
+                value:
+                  completed: true
+              markIncomplete:
+                summary: Mark as incomplete
+                value:
+                  completed: false
+      responses:
+        '200':
+          description: Todo status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 1
+                title: "Complete project documentation"
+                description: "Write comprehensive API docs"
+                completed: true
+                user_id: "user123"
+                created_at: "2026-02-05T10:30:00Z"
+                updated_at: "2026-02-05T12:30:00Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/todos/{id}:
+    put:
+      tags:
+        - todos
+      summary: Update todo details
+      description: |
+        Updates the title and/or description of a todo item.
+        User must be the owner of the todo.
+        Performance target: <300ms.
+      operationId: updateTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Todo ID
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoUpdate'
+            examples:
+              updateBoth:
+                summary: Update title and description
+                value:
+                  title: "Updated title"
+                  description: "Updated description"
+              updateTitleOnly:
+                summary: Update title only
+                value:
+                  title: "New title"
+              updateDescriptionOnly:
+                summary: Update description only
+                value:
+                  description: "New description"
+      responses:
+        '200':
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+              example:
+                id: 1
+                title: "Updated title"
+                description: "Updated description"
+                completed: false
+                user_id: "user123"
+                created_at: "2026-02-05T10:30:00Z"
+                updated_at: "2026-02-05T13:00:00Z"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - todos
+      summary: Delete a todo
+      description: |
+        Permanently deletes a todo item.
+        User must be the owner of the todo.
+        Performance target: <200ms.
+      operationId: deleteTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Todo ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Todo deleted successfully (no content)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from authentication system.
+        Include in Authorization header as: Bearer <token>
+
+  schemas:
+    TodoCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Todo title (required, 1-200 characters)
+          example: "Complete project documentation"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional detailed description (max 1000 characters)
+          example: "Write comprehensive API documentation with examples"
+
+    TodoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          nullable: true
+          description: Updated title (1-200 characters)
+          example: "Updated task title"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Updated description (max 1000 characters)
+          example: "Updated task description"
+
+    TodoComplete:
+      type: object
+      required:
+        - completed
+      properties:
+        completed:
+          type: boolean
+          description: Completion status
+          example: true
+
+    TodoResponse:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - user_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique todo identifier
+          example: 1
+        title:
+          type: string
+          description: Todo title
+          example: "Complete project documentation"
+        description:
+          type: string
+          nullable: true
+          description: Todo description (null if not provided)
+          example: "Write comprehensive API docs"
+        completed:
+          type: boolean
+          description: Completion status
+          example: false
+        user_id:
+          type: string
+          description: Owner's user ID
+          example: "user123"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp (ISO 8601, UTC)
+          example: "2026-02-05T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp (ISO 8601, UTC)
+          example: "2026-02-05T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error type or message
+          example: "Validation Error"
+        detail:
+          type: string
+          nullable: true
+          description: Detailed error description
+          example: "Invalid request data"
+        validation_errors:
+          type: array
+          nullable: true
+          description: List of validation errors (for 400 responses)
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+                description: Field location
+                example: ["body", "title"]
+              msg:
+                type: string
+                description: Error message
+                example: "field required"
+              type:
+                type: string
+                description: Error type
+                example: "value_error.missing"
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required or token invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Unauthorized"
+            detail: "Invalid authentication credentials"
+
+    ForbiddenError:
+      description: User does not have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Forbidden"
+            detail: "You do not have permission to access this todo"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Not Found"
+            detail: "The requested todo does not exist"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Validation Error"
+            detail: "Invalid request data"
+            validation_errors:
+              - loc: ["body", "title"]
+                msg: "field required"
+                type: "value_error.missing"
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Internal Server Error"
+            detail: "An unexpected error occurred"

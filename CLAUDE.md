@@ -1,4 +1,4 @@
-# Claude Code Rules
+﻿# Claude Code Rules
 
 This file is generated during init for the selected agent.
 
@@ -19,7 +19,9 @@ Transform a console application into a modern multi-user web application with pe
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 16+ (App Router) |
+| Frontend | Next.js 16+ (App Router), TypeScript 5.0+, React 18+, Tailwind CSS |
+| Frontend State | React Query (server state), React Context (auth state), React Hook Form (forms) |
+| Frontend Testing | Jest, React Testing Library, Playwright (E2E) |
 | Backend | Python FastAPI |
 | ORM | SQLModel |
 | Database | Neon Serverless PostgreSQL |
@@ -73,6 +75,30 @@ Better Auth is configured to issue JWT tokens for authentication:
 - User ID from token must match user ID in request URL/body
 - Implement proper error handling for invalid/expired tokens
 - Never expose JWT secret in client-side code
+
+### Frontend Architecture (Next.js 16+ App Router)
+
+**Component Strategy:**
+- Server Components by default for pages and layouts
+- Client Components only for interactivity (forms, buttons, event handlers)
+- Clear separation: Server Components for data fetching, Client Components for UI interactions
+
+**State Management:**
+- React Query for server state (todos, user data) with automatic caching
+- React Context for authentication state
+- React Hook Form for form state management
+- Local useState for UI-only state (dialogs, loading indicators)
+
+**API Integration:**
+- Native fetch with custom wrapper for type-safe API calls
+- Automatic JWT token injection via interceptors
+- Error handling with user-friendly messages
+- Optimistic updates for better UX
+
+**Route Protection:**
+- Next.js middleware for authentication checks before page rendering
+- Redirect unauthenticated users to signin page
+- Redirect authenticated users away from auth pages
 
 ### Basic Level Requirements
 
