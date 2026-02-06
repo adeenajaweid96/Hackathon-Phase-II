@@ -22,6 +22,12 @@ engine = create_async_engine(
     max_overflow=10,
     pool_pre_ping=True,  # Verify connections before use
     pool_recycle=3600,  # Recycle connections after 1 hour
+    connect_args={
+        "ssl": "require",  # Neon requires SSL
+        "server_settings": {
+            "application_name": "todo_backend"
+        }
+    }
 )
 
 # Async session factory

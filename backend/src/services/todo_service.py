@@ -5,7 +5,7 @@ Handles database operations with user_id filtering for data isolation.
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.models.todo import Todo, TodoCreate, TodoUpdate
 
@@ -84,9 +84,11 @@ class TodoService:
             title=todo_data.title,
             description=todo_data.description,
             completed=False,  # New todos are always incomplete
+            priority=todo_data.priority or "medium",
+            status=todo_data.status or "not_started",
             user_id=user_id,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         session.add(todo)
         await session.commit()
@@ -117,7 +119,7 @@ class TodoService:
             return None
 
         todo.completed = completed
-        todo.updated_at = datetime.utcnow()
+        todo.updated_at = datetime.now(timezone.utc)
         session.add(todo)
         await session.commit()
         await session.refresh(todo)
@@ -151,8 +153,12 @@ class TodoService:
             todo.title = todo_data.title
         if todo_data.description is not None:
             todo.description = todo_data.description
+        if todo_data.priority is not None:
+            todo.priority = todo_data.priority
+        if todo_data.status is not None:
+            todo.status = todo_data.status
 
-        todo.updated_at = datetime.utcnow()
+        todo.updated_at = datetime.now(timezone.utc)
         session.add(todo)
         await session.commit()
         await session.refresh(todo)

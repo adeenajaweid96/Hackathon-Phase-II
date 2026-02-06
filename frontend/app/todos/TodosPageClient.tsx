@@ -145,7 +145,7 @@ export function TodosPageClient() {
               <h1 className="text-2xl font-bold text-gray-900">My Todos</h1>
               {user && (
                 <p className="text-sm text-gray-600 mt-1">
-                  Welcome back, {user.email}
+                  Welcome back, {user.email.split('@')[0]}
                 </p>
               )}
             </div>
